@@ -1,0 +1,236 @@
+package wumpusworld;
+
+/**
+ * Contains starting code for creating your own Wumpus World agent.
+ * Currently the agent only make a random decision each turn.
+ * 
+ * @author Johan Hagelbäck
+ */
+public class MyAgent implements Agent
+{
+    private World w;
+    int rnd;
+    boolean wumpus_noticed = false;
+    
+    /**
+     * Creates a new instance of your solver agent.
+     * 
+     * @param world Current world state 
+     */
+    
+    public MyAgent(World world)
+    {
+    	
+    	w = world;   
+       
+    }
+   
+            
+    /**
+     * Asks your solver agent to execute an action.
+     */
+
+    public void doAction()
+    {
+    	Graph g = new Graph(w, w.getPlayerX(), w.getPlayerY(), this.wumpus_noticed);
+    	g.build_graph();
+		g.graph_update();
+    	
+    	//Location of the player
+        
+    		int cX = w.getPlayerX();
+            int cY = w.getPlayerY();
+        //Basic action:
+        //Grab Gold if we can.
+        if (w.hasGlitter(cX, cY))
+        {
+            w.doAction(World.A_GRAB);
+            return;
+        }
+        
+        //Basic action:
+        //We are in a pit. Climb up.
+        if (w.isInPit())
+        {
+            w.doAction(World.A_CLIMB);
+            return;
+        }
+        
+        //Test the environment
+        if (w.hasBreeze(cX, cY))
+        {
+            System.out.println("I am in a Breeze");
+        }
+        if (w.hasStench(cX, cY))
+        {
+            System.out.println("I am in a Stench");
+        }
+        if (w.hasPit(cX, cY))
+        {
+            System.out.println("I am in a Pit");
+        }
+        if (w.getDirection() == World.DIR_RIGHT)
+        {
+            System.out.println("I am facing Right");
+        }
+        if (w.getDirection() == World.DIR_LEFT)
+        {
+            System.out.println("I am facing Left");
+        }
+        if (w.getDirection() == World.DIR_UP)
+        {
+            System.out.println("I am facing Up");
+        }
+        if (w.getDirection() == World.DIR_DOWN)
+        {
+            System.out.println("I am facing Down");
+        }
+        
+        int init_x =1, init_y=1;
+      //Verifying the stench on the initial position 
+		if(w.hasStench(init_x, init_y) == true) 
+        {
+			//Creating the direction variable for understanding the direction in which the arrow is fired from the initial direction
+        	
+			 {
+				
+		     			//defining the direction variable for knowing the direction of shooting the arrow from initial direction
+		             	int direction = 0;
+		             	if(w.hasArrow() == true) 
+		             	{
+		             		//Randomly shooting the arrow to make a move from initial grid containing stench.
+		     	        	if(w.getDirection() == World.DIR_RIGHT) 
+		     	        	{
+		     	        		w.doAction(World.A_TURN_LEFT);
+		     	        		w.doAction(World.A_SHOOT);
+		     	        		direction = 1;
+		     	        	}
+		     	        	
+//	     		 		else if(w.getDirection() == World.DIR_LEFT) 
+//		     		 		{
+//		     		 			w.doAction(World.A_TURN_RIGHT);
+//		     		 			w.doAction(World.A_SHOOT);
+//		     		 			}
+//		     		 		else if(w.getDirection() == World.DIR_DOWN) 
+//		     		 		{
+//		     		 			w.doAction(World.A_TURN_LEFT);		 			
+//		     		 			w.doAction(World.A_SHOOT);
+//		     		 			direction = 1;
+//		     		 		}
+		     		 		else 
+		     		 		{
+		     		 			w.doAction(World.A_SHOOT);
+		     		 			direction = 1;
+		     		 		}
+		             	}
+		             	//Verifying whether the wumpus is alive 
+		             	if(w.wumpusAlive() == true) 
+		             	{
+		             		Graph g2 = new Graph(w, w.getPlayerX(), w.getPlayerY(), wumpus_noticed); 
+		             		// boolean wumpus_noticed = true;  
+		                     g2.build_graph();
+		                     g2.graph_update();
+		                     if(direction == 1) g2.P[0][1].heuristic_value = 600000;
+		                     else g2.P[1][0].heuristic_value = 600000;
+		             		 g2.shortestPath();
+		             	}
+		             	else g.shortestPath();
+		             }
+			 }
+		else if(w.hasStench(init_x, init_y) && w.hasBreeze(init_x, init_y)){
+			{
+				int direction = 0;
+				if(w.hasArrow() == true) 
+             	{
+             		//Randomly shooting the arrow to make a move from initial grid containing stench.
+					if(w.getDirection() == World.DIR_UP) 
+		        	{
+		        		w.doAction(World.A_SHOOT);
+		        	}
+     	        	else if(w.getDirection() == World.DIR_DOWN) 
+    		 		{
+    		 			w.doAction(World.A_TURN_LEFT);		 			
+    		 			w.doAction(World.A_SHOOT);
+    		 			direction = 1;
+    		 		}
+    	        	else if(w.getDirection() == World.DIR_RIGHT) 
+    		 		{
+    	        		w.doAction(World.A_SHOOT);
+    		 			direction = 1;	
+    		 		}
+    	        	else 
+     		 		{
+     		 			w.doAction(World.A_SHOOT);
+     		 			direction = 1;
+     		 		}
+			}
+			
+		}
+		}
+        
+		
+		     		//Checking for the stench at current position
+		             else if (w.hasStench(cX, cY) ==true)
+		     	        {  
+		     	        	if(w.hasArrow() == true) {
+		     	        		//checking for the X and Y adjacent coordinates of the stench 
+		     		            int[] adj_x = new int[]{cX+1, cX+1, cX-1, cX-1, cX+2, cX-2, cX, cX};
+		     		            int[] adj_y = new int[]{cY+1, cY-1, cY-1, cY+1, cY, cY, cY+2, cY-2};
+		     		            boolean fired = false;
+		     		            //checking for the surrounding stench and visited nodes for finding wumpus
+		     		            int i = 0;
+		     		            while(i <=7){
+		     		            	if(w.hasStench(adj_x[i], adj_y[i]) == true) 
+		     		            	{
+		     		            		if(i <= 3) 
+		     		            		{
+		     		            			if(w.isVisited(adj_x[i], cY) == true)
+		     		            			{
+		     		            				g.next_step(0, adj_y[i]-cY, 2);
+		     		            				fired = true;
+		     		            				break;
+		     		            			}
+		     		            			else if(w.isVisited(cX, adj_y[i]) == true) 
+		     		            			{
+		     		            				g.next_step(adj_x[i]-cX, 0, 2);
+		     		            				fired = true;
+		     		            				break;
+		     		            			}		
+		     		            		}
+		     		            		else 
+		     		            		{
+		     		            			g.next_step((adj_x[i]-cX)/2,(adj_y[i]-cY/2), 2);
+		     		            			fired = true;
+		     		            			break;
+		     		            		}
+		     		            	}
+		     		             i++;
+		     		            }
+		     		            if (fired == false)                   //**************remainder****************
+		     		            {
+		     		            	g.shortestPath();
+		     		            }
+		     	        	}
+		     	        	else 
+		     	        	{
+		     	        		g.shortestPath(); 
+		     	        	}
+		     	        }
+		             else 
+		             {
+		             	g.shortestPath();
+		             }
+		         }  //doAction() ends here
+		     	 
+
+     
+    public int decideRandomMove()
+    {
+      return (int)(Math.random() * 4);
+    }
+}   
+                
+        
+   
+    
+
